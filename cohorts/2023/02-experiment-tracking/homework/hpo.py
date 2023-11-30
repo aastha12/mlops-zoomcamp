@@ -43,10 +43,15 @@ def run_optimization(data_path: str, num_trials: int):
             'n_jobs': -1
         }
 
-        rf = RandomForestRegressor(**params)
-        rf.fit(X_train, y_train)
-        y_pred = rf.predict(X_val)
-        rmse = mean_squared_error(y_val, y_pred, squared=False)
+        with mlflow.start_run():
+            mlflow.set_tag(key="Model",value="Random Forest Regressor")
+            mlflow.set_tag(key="Trial Number",value=trial)
+            mlflow.log_params(params)
+            rf = RandomForestRegressor(**params)
+            rf.fit(X_train, y_train)
+            y_pred = rf.predict(X_val)
+            rmse = mean_squared_error(y_val, y_pred, squared=False)
+            mlflow.log_metric(key="rmse",value=rmse)
 
         return rmse
 
