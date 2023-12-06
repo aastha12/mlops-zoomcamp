@@ -9,8 +9,15 @@ from sklearn.metrics import mean_squared_error
 import mlflow
 import xgboost as xgb
 from prefect import flow, task
+from prefect.artifacts import create_markdown_artifact
+
+@task
+def markdown_task(rmse:float):
+    markdown_report = f"RMSE for validation: {rmse:.2f}"
+    create_markdown_artifact(markdown=markdown_report,key="rmse-val",description="RMSE for validation")
 
 
+@task(retries=3, retry_delay_seconds=2)
 def read_data(filename: str) -> pd.DataFrame:
     """Read data into DataFrame"""
     df = pd.read_parquet(filename)
@@ -29,6 +36,7 @@ def read_data(filename: str) -> pd.DataFrame:
     return df
 
 
+@task
 def add_features(
     df_train: pd.DataFrame, df_val: pd.DataFrame
 ) -> tuple(
@@ -60,6 +68,7 @@ def add_features(
     return X_train, X_val, y_train, y_val, dv
 
 
+@task(log_prints=True)
 def train_best_model(
     X_train: scipy.sparse._csr.csr_matrix,
     X_val: scipy.sparse._csr.csr_matrix,
@@ -96,6 +105,7 @@ def train_best_model(
         y_pred = booster.predict(valid)
         rmse = mean_squared_error(y_val, y_pred, squared=False)
         mlflow.log_metric("rmse", rmse)
+        markdown_task(rmse)
 
         pathlib.Path("models").mkdir(exist_ok=True)
         with open("models/preprocessor.b", "wb") as f_out:
@@ -106,9 +116,10 @@ def train_best_model(
     return None
 
 
-def main_flow(
-    train_path: str = "../../data/green_tripdata_2022-01.parquet",
-    val_path: str = "../../data/green_tripdata_2022-02.parquet"
+@flow
+def main_flow_q4(
+    train_path: str = "/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/data/green_tripdata_2023-02.parquet", 
+    val_path: str = "/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/data/green_tripdata_2023-03.parquet",
 ) -> None:
     """The main training pipeline"""
 
@@ -128,4 +139,4 @@ def main_flow(
 
 
 if __name__ == "__main__":
-    main_flow()
+    main_flow_q4()
