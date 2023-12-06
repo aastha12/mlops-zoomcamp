@@ -1,4 +1,5 @@
 {
   "main-flow": "3.4/orchestrate.py:main_flow",
+  "main-flow-q3": "orchestrate_hw_q3.py:main_flow_q3",
   "main-flow-q4": "orchestrate_hw_q4.py:main_flow_q4"
 }

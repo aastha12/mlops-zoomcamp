@@ -11,12 +11,6 @@ import xgboost as xgb
 from prefect import flow, task
 from prefect.artifacts import create_markdown_artifact
 
-@task
-def markdown_task(rmse:float) -> None:
-    markdown_report = f"RMSE for validation: {rmse:.2f}"
-    create_markdown_artifact(markdown=markdown_report,key="rmse-val",description="RMSE for validation")
-    return None
-
 
 @task(retries=3, retry_delay_seconds=2)
 def read_data(filename: str) -> pd.DataFrame:
@@ -76,7 +70,7 @@ def train_best_model(
     y_train: np.ndarray,
     y_val: np.ndarray,
     dv: sklearn.feature_extraction.DictVectorizer,
-) -> float:
+) -> None:
     """train a model with best hyperparams and write everything out"""
 
     with mlflow.start_run():
@@ -114,13 +108,13 @@ def train_best_model(
         mlflow.log_artifact("models/preprocessor.b", artifact_path="preprocessor")
 
         mlflow.xgboost.log_model(booster, artifact_path="models_mlflow")
-    return rmse
+    return None
 
 
 @flow
-def main_flow_q4(
-    train_path: str = "/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/data/green_tripdata_2023-02.parquet", 
-    val_path: str = "/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/data/green_tripdata_2023-03.parquet",
+def main_flow_q3(
+    train_path: str = "", 
+    val_path: str = "",
 ) -> None:
     """The main training pipeline"""
 
@@ -136,11 +130,8 @@ def main_flow_q4(
     X_train, X_val, y_train, y_val, dv = add_features(df_train, df_val)
 
     # Train
-    rmse = train_best_model(X_train, X_val, y_train, y_val, dv)
-
-    # Creating markdown artifact
-    markdown_task(rmse)
+    train_best_model(X_train, X_val, y_train, y_val, dv)
 
 
 if __name__ == "__main__":
-    main_flow_q4()
+    main_flow_q3()
