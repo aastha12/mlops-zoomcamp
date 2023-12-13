@@ -7,6 +7,10 @@ with open('lin_reg.bin', 'rb') as f_in:
 
 
 def prepare_features(ride):
+    """
+    there were more features used in the week 1 model but here we are
+    just selecting 2 features for now
+    """
     features = {}
     features['PU_DO'] = '%s_%s' % (ride['PULocationID'], ride['DOLocationID'])
     features['trip_distance'] = ride['trip_distance']
