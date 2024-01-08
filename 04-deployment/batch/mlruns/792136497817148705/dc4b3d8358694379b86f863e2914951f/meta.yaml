@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/792136497817148705/dc4b3d8358694379b86f863e2914951f/artifacts
+end_time: 1704676140580
+entry_point_name: ''
+experiment_id: '792136497817148705'
+lifecycle_stage: active
+run_id: dc4b3d8358694379b86f863e2914951f
+run_name: amusing-carp-480
+run_uuid: dc4b3d8358694379b86f863e2914951f
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1704676132659
+status: 3
+tags: []
+user_id: aasth

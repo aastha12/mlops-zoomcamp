@@ -56,8 +56,11 @@ def prepare_dictionaries(df: pd.DataFrame):
 
 
 def load_model(run_id):
-    logged_model = f's3://mlflow-models-alexey/1/{run_id}/artifacts/model'
-    model = mlflow.pyfunc.load_model(logged_model)
+    # logged_model = f's3://mlflow-models-alexey/1/{run_id}/artifacts/model'
+    with open(f"/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/04-deployment/batch/mlartifacts/792136497817148705/dc4b3d8358694379b86f863e2914951f/artifacts/model/model.pkl",
+               'rb') as handle:
+        model = pickle.load(handle)    
+    # model = mlflow.pyfunc.load_model(logged_model)
     return model
 
 
@@ -77,6 +80,7 @@ def save_results(df, y_pred, run_id, output_file):
 
 @task
 def apply_model(input_file, run_id, output_file):
+    
     logger = get_run_logger()
 
     logger.info(f'reading the data from {input_file}...')
@@ -100,9 +104,8 @@ def get_paths(run_date, taxi_type, run_id):
     year = prev_month.year
     month = prev_month.month 
 
-    input_file = f's3://nyc-tlc/trip data/{taxi_type}_tripdata_{year:04d}-{month:02d}.parquet'
-    output_file = f's3://nyc-duration-prediction-alexey/taxi_type={taxi_type}/year={year:04d}/month={month:02d}/{run_id}.parquet'
-
+    input_file = f'/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/data/{taxi_type}_tripdata_{year}-{month:02d}.parquet'
+    output_file = f'/Users/aasth/Desktop/Data analytics/MLOps/datatalks-zoomcamp/mlops-zoomcamp/04-deployment/batch/output/{taxi_type}/{year}-{month:02d}.parquet'
     return input_file, output_file
 
 
@@ -126,10 +129,12 @@ def ride_duration_prediction(
 
 def run():
     taxi_type = sys.argv[1] # 'green'
-    year = int(sys.argv[2]) # 2021
+    year = int(sys.argv[2]) # 2022
     month = int(sys.argv[3]) # 3
 
-    run_id = sys.argv[4] # 'e1efc53e9bd149078b0c12aeaa6365df'
+    run_id = 'dc4b3d8358694379b86f863e2914951f' # 'dc4b3d8358694379b86f863e2914951f'
+
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
     ride_duration_prediction(
         taxi_type=taxi_type,
