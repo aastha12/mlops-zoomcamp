@@ -25,6 +25,10 @@ create table dummy_metrics(
 
 def prep_db():
 	with psycopg.connect("host=localhost port=5432 user=postgres password=example", autocommit=True) as conn:
+		""" 
+		conn.execute("SELECT datname from pg_database") will list all the databases
+		below we are checking if the test db exists. If not, create it
+		"""
 		res = conn.execute("SELECT 1 FROM pg_database WHERE datname='test'")
 		if len(res.fetchall()) == 0:
 			conn.execute("create database test;")
